@@ -63,7 +63,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 
 	g := &Game{
-		layers: [][]int{InitMap('1', '2', 8, 4)},
+		layers: [][]int{InitMap('0', '3', 8, 4)},
 	}
 	ebiten.SetWindowSize(961, 961)
 	ebiten.SetWindowTitle("beneath the castle")
