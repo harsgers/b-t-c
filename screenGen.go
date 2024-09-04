@@ -32,10 +32,6 @@ func InitMap(wallVal rune, doorVal rune, splitCount int, minRoomSize int) []int 
 	return intGameMap
 }
 
-func mapRuneToTile(r rune) *Tile {
-
-}
-
 func flatten[T any](slices [][]T) []T {
 	var flat_slice []T
 	for _, s := range slices {

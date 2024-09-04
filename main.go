@@ -10,6 +10,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const (
@@ -20,21 +21,46 @@ const (
 )
 
 var tilesImage *ebiten.Image
+var playerImage *ebiten.Image
 
 func init() {
 	var err error
 	img, _, err := image.Decode(bytes.NewReader(assets.Shore_png))
+
+	p_img, _, err := image.Decode(bytes.NewReader(assets.MyGuy_png))
 	if err != nil {
 		log.Fatal(err)
 	}
 	tilesImage = ebiten.NewImageFromImage(img)
+	playerImage = ebiten.NewImageFromImage(p_img)
 }
 
+type Coords struct {
+	X float64
+	Y float64
+}
 type Game struct {
-	layers [][]int
+	layers         [][]int
+	playerPosition Coords
 }
 
 func (g *Game) Update() error {
+	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
+		g.playerPosition.Y += 1 * TILE_SIZE
+		fmt.Printf("coords: %v \n", g.playerPosition)
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
+		g.playerPosition.Y -= 1 * TILE_SIZE
+		fmt.Printf("coords: %v \n", g.playerPosition)
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
+		g.playerPosition.X -= 1 * TILE_SIZE
+		fmt.Printf("coords: %v \n", g.playerPosition)
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
+		g.playerPosition.X += 1 * TILE_SIZE
+		fmt.Printf("coords: %v \n", g.playerPosition)
+	}
 	return nil
 }
 
@@ -53,6 +79,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			screen.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+TILE_SIZE, sy+TILE_SIZE)).(*ebiten.Image), op)
 		}
 	}
+	pOps := &ebiten.DrawImageOptions{}
+	pOps.GeoM.Translate(g.playerPosition.X, g.playerPosition.Y)
+	screen.DrawImage(playerImage, pOps)
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %1.2f", ebiten.ActualTPS()))
 }
 
@@ -63,7 +92,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 
 	g := &Game{
-		layers: [][]int{InitMap('0', '3', 8, 4)},
+		playerPosition: Coords{X: 5 * TILE_SIZE, Y: 5 * TILE_SIZE},
+		layers:         [][]int{InitMap('0', '3', 8, 4)},
 	}
 	ebiten.SetWindowSize(961, 961)
 	ebiten.SetWindowTitle("beneath the castle")
