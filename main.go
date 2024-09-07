@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/harrisongerst/b-t-c/assets"
+	"github.com/harrisongerst/b-t-c/player"
 	"image"
 	_ "image/png"
 	"log"
@@ -40,31 +41,47 @@ type Coords struct {
 	Y float64
 }
 type Game struct {
-	layers         [][]int
-	playerPosition Coords
-	playerIndex    int
+	layers [][]int
+	player *player.Player
 }
 
 func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		g.layers[1][g.playerIndex] = 0     //set previous tile index to nothing now that the player has moved
-		g.playerIndex = g.playerIndex + 30 //set new index (add 30 for down cuz 30 tiles to a row) TODO:make the adding and subjecting number a constant somewhere based on screensize this shoild be really easy
-		g.layers[1][g.playerIndex] = 1
+		if g.layers[0][g.player.PosIndex+30] == 2 {
+			fmt.Print("thats a wall")
+		} else {
+			g.layers[1][g.player.PosIndex] = 0
+			g.player.HandleMovement(ebiten.KeyDown)
+			g.layers[1][g.player.PosIndex] = 1
+		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		g.layers[1][g.playerIndex] = 0
-		g.playerIndex = g.playerIndex - 30
-		g.layers[1][g.playerIndex] = 1
+		if g.layers[0][g.player.PosIndex-30] == 2 {
+			fmt.Print("thats a wall")
+		} else {
+			g.layers[1][g.player.PosIndex] = 0
+			g.player.HandleMovement(ebiten.KeyUp)
+			g.layers[1][g.player.PosIndex] = 1
+		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-		g.layers[1][g.playerIndex] = 0
-		g.playerIndex = g.playerIndex - 1
-		g.layers[1][g.playerIndex] = 1
+		if g.layers[0][g.player.PosIndex-1] == 2 {
+			fmt.Print("thats a wall")
+		} else {
+			g.layers[1][g.player.PosIndex] = 0
+			g.player.HandleMovement(ebiten.KeyLeft)
+			g.layers[1][g.player.PosIndex] = 1
+		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-		g.layers[1][g.playerIndex] = 0
-		g.playerIndex = g.playerIndex + 1
-		g.layers[1][g.playerIndex] = 1
+		if g.layers[0][g.player.PosIndex+1] == 2 {
+			fmt.Print("thats a wall")
+		} else {
+			g.layers[1][g.player.PosIndex] = 0
+			g.player.HandleMovement(ebiten.KeyRight)
+			g.layers[1][g.player.PosIndex] = 1
+		}
+
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
 		fmt.Printf("Current Game State: %+v", g)
@@ -112,13 +129,15 @@ func main() {
 	baseMap := InitMap('0', '3', 8, 4)
 	objectMap := InitOLayer(len(baseMap), baseMap)
 	g := &Game{
-		playerPosition: Coords{X: TILE_SIZE, Y: TILE_SIZE},
 		//TODO: add the objects/player layer to track state of pc position
 		layers: [][]int{
 			baseMap,
 			objectMap,
 		},
-		playerIndex: 50,
+		player: &player.Player{
+			PosIndex: 45,
+			Health:   10,
+		},
 	}
 	ebiten.SetWindowSize(961, 961)
 	ebiten.SetWindowTitle("beneath the castle")
