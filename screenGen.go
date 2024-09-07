@@ -32,6 +32,19 @@ func InitMap(wallVal rune, doorVal rune, splitCount int, minRoomSize int) []int 
 	return intGameMap
 }
 
+func InitOLayer(mapSize int, baseLayer []int) []int {
+	oLayer := make([]int, mapSize)
+	//TODO: make this dynamic, actually check for walls
+	for i := range oLayer {
+		if i == 50 && baseLayer[i] != 2 {
+			oLayer[i] = 1
+			continue
+		}
+		oLayer[i] = 0
+	}
+	return oLayer
+}
+
 func flatten[T any](slices [][]T) []T {
 	var flat_slice []T
 	for _, s := range slices {

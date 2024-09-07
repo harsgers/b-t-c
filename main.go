@@ -52,6 +52,7 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
 		g.playerPosition.Y -= 1 * TILE_SIZE
 		fmt.Printf("coords: %v \n", g.playerPosition)
+		fmt.Printf("layers \n %+v", g)
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
 		g.playerPosition.X -= 1 * TILE_SIZE
@@ -70,14 +71,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	const xCount = SCREEN_WIDTH / TILE_SIZE
 
-	for _, l := range g.layers {
-		for i, t := range l {
-			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate((float64(i%xCount) * TILE_SIZE), float64((i/xCount)*TILE_SIZE))
-			sx := (t % tileXCount) * TILE_SIZE
-			sy := (t / tileXCount) * TILE_SIZE
-			screen.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+TILE_SIZE, sy+TILE_SIZE)).(*ebiten.Image), op)
+	for m, l := range g.layers {
+		if m == 0 {
+			for i, t := range l {
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate((float64(i%xCount) * TILE_SIZE), float64((i/xCount)*TILE_SIZE))
+				sx := (t % tileXCount) * TILE_SIZE
+				sy := (t / tileXCount) * TILE_SIZE
+				screen.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+TILE_SIZE, sy+TILE_SIZE)).(*ebiten.Image), op)
+			}
 		}
+		if m == 1 {
+			fmt.Printf("%v", l)
+		}
+		// for i, o :range
 	}
 	pOps := &ebiten.DrawImageOptions{}
 	pOps.GeoM.Translate(g.playerPosition.X, g.playerPosition.Y)
@@ -88,12 +95,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return SCREEN_WIDTH, SCREEN_HEIGHT
 }
-
 func main() {
 
+	baseMap := InitMap('0', '3', 8, 4)
+	objectMap := InitOLayer(len(baseMap), baseMap)
 	g := &Game{
 		playerPosition: Coords{X: 5 * TILE_SIZE, Y: 5 * TILE_SIZE},
-		layers:         [][]int{InitMap('0', '3', 8, 4)},
+		//TODO: add the objects/player layer to track state of pc position
+		layers: [][]int{
+			baseMap,
+			objectMap,
+		},
 	}
 	ebiten.SetWindowSize(961, 961)
 	ebiten.SetWindowTitle("beneath the castle")
