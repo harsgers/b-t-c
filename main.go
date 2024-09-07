@@ -42,25 +42,32 @@ type Coords struct {
 type Game struct {
 	layers         [][]int
 	playerPosition Coords
+	playerIndex    int
 }
 
 func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		g.playerPosition.Y += 1 * TILE_SIZE
-		fmt.Printf("coords: %v \n", g.playerPosition)
+		g.layers[1][g.playerIndex] = 0     //set previous tile index to nothing now that the player has moved
+		g.playerIndex = g.playerIndex + 30 //set new index (add 30 for down cuz 30 tiles to a row) TODO:make the adding and subjecting number a constant somewhere based on screensize this shoild be really easy
+		g.layers[1][g.playerIndex] = 1
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		g.playerPosition.Y -= 1 * TILE_SIZE
-		fmt.Printf("coords: %v \n", g.playerPosition)
-		fmt.Printf("layers \n %+v", g)
+		g.layers[1][g.playerIndex] = 0
+		g.playerIndex = g.playerIndex - 30
+		g.layers[1][g.playerIndex] = 1
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-		g.playerPosition.X -= 1 * TILE_SIZE
-		fmt.Printf("coords: %v \n", g.playerPosition)
+		g.layers[1][g.playerIndex] = 0
+		g.playerIndex = g.playerIndex - 1
+		g.layers[1][g.playerIndex] = 1
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-		g.playerPosition.X += 1 * TILE_SIZE
-		fmt.Printf("coords: %v \n", g.playerPosition)
+		g.layers[1][g.playerIndex] = 0
+		g.playerIndex = g.playerIndex + 1
+		g.layers[1][g.playerIndex] = 1
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		fmt.Printf("Current Game State: %+v", g)
 	}
 	return nil
 }
@@ -68,10 +75,10 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	w := tilesImage.Bounds().Dx()
 	tileXCount := w / TILE_SIZE
-
 	const xCount = SCREEN_WIDTH / TILE_SIZE
 
 	for m, l := range g.layers {
+		//render tile layer
 		if m == 0 {
 			for i, t := range l {
 				op := &ebiten.DrawImageOptions{}
@@ -81,14 +88,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				screen.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+TILE_SIZE, sy+TILE_SIZE)).(*ebiten.Image), op)
 			}
 		}
+		//render object layer
 		if m == 1 {
-			fmt.Printf("%v", l)
+			for i, o := range l {
+				// check for 1 which is the player object
+				if o == 1 {
+					pOps := &ebiten.DrawImageOptions{}
+					pOps.GeoM.Translate((float64(i%xCount) * TILE_SIZE), float64((i/xCount)*TILE_SIZE))
+					screen.DrawImage(playerImage, pOps)
+				}
+			}
+
 		}
-		// for i, o :range
 	}
-	pOps := &ebiten.DrawImageOptions{}
-	pOps.GeoM.Translate(g.playerPosition.X, g.playerPosition.Y)
-	screen.DrawImage(playerImage, pOps)
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %1.2f", ebiten.ActualTPS()))
 }
 
@@ -100,12 +112,13 @@ func main() {
 	baseMap := InitMap('0', '3', 8, 4)
 	objectMap := InitOLayer(len(baseMap), baseMap)
 	g := &Game{
-		playerPosition: Coords{X: 5 * TILE_SIZE, Y: 5 * TILE_SIZE},
+		playerPosition: Coords{X: TILE_SIZE, Y: TILE_SIZE},
 		//TODO: add the objects/player layer to track state of pc position
 		layers: [][]int{
 			baseMap,
 			objectMap,
 		},
+		playerIndex: 50,
 	}
 	ebiten.SetWindowSize(961, 961)
 	ebiten.SetWindowTitle("beneath the castle")
