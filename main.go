@@ -14,26 +14,23 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+// HAVE EACH OBJECT HAVE AN UPDATE AND A DRAW
 const (
-	SCREEN_HEIGHT = 490
-	SCREEN_WIDTH  = 490
+	SCREEN_HEIGHT = 488
+	SCREEN_WIDTH  = 488
 
 	TILE_SIZE = 16
 )
 
 var tilesImage *ebiten.Image
-var playerImage *ebiten.Image
 
 func init() {
 	var err error
-	img, _, err := image.Decode(bytes.NewReader(assets.Shore_png))
-
-	p_img, _, err := image.Decode(bytes.NewReader(assets.MyGuy_png))
+	img, _, err := image.Decode(bytes.NewReader(assets.Wallandfloor_png))
 	if err != nil {
 		log.Fatal(err)
 	}
 	tilesImage = ebiten.NewImageFromImage(img)
-	playerImage = ebiten.NewImageFromImage(p_img)
 }
 
 type Coords struct {
@@ -46,43 +43,11 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		if g.layers[0][g.player.PosIndex+30] == 2 {
-			fmt.Print("thats a wall")
-		} else {
-			g.layers[1][g.player.PosIndex] = 0
-			g.player.HandleMovement(ebiten.KeyDown)
-			g.layers[1][g.player.PosIndex] = 1
-		}
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		if g.layers[0][g.player.PosIndex-30] == 2 {
-			fmt.Print("thats a wall")
-		} else {
-			g.layers[1][g.player.PosIndex] = 0
-			g.player.HandleMovement(ebiten.KeyUp)
-			g.layers[1][g.player.PosIndex] = 1
-		}
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-		if g.layers[0][g.player.PosIndex-1] == 2 {
-			fmt.Print("thats a wall")
-		} else {
-			g.layers[1][g.player.PosIndex] = 0
-			g.player.HandleMovement(ebiten.KeyLeft)
-			g.layers[1][g.player.PosIndex] = 1
-		}
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-		if g.layers[0][g.player.PosIndex+1] == 2 {
-			fmt.Print("thats a wall")
-		} else {
-			g.layers[1][g.player.PosIndex] = 0
-			g.player.HandleMovement(ebiten.KeyRight)
-			g.layers[1][g.player.PosIndex] = 1
-		}
-
-	}
+	//update player based on input
+	//see if a turn has happened
+	//if so then update other entities on screen
+	//update map state
+	g.player.Update(g.layers[0])
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
 		fmt.Printf("Current Game State: %+v", g)
 	}
@@ -105,19 +70,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				screen.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+TILE_SIZE, sy+TILE_SIZE)).(*ebiten.Image), op)
 			}
 		}
-		//render object layer
-		if m == 1 {
-			for i, o := range l {
-				// check for 1 which is the player object
-				if o == 1 {
-					pOps := &ebiten.DrawImageOptions{}
-					pOps.GeoM.Translate((float64(i%xCount) * TILE_SIZE), float64((i/xCount)*TILE_SIZE))
-					screen.DrawImage(playerImage, pOps)
-				}
-			}
-
-		}
 	}
+
+	g.player.Draw(screen)
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %1.2f", ebiten.ActualTPS()))
 }
 
@@ -134,10 +89,7 @@ func main() {
 			baseMap,
 			objectMap,
 		},
-		player: &player.Player{
-			PosIndex: 45,
-			Health:   10,
-		},
+		player: player.NewPlayer(20, 20),
 	}
 	ebiten.SetWindowSize(961, 961)
 	ebiten.SetWindowTitle("beneath the castle")
