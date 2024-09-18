@@ -89,10 +89,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func (g *Game) updateMap() {
-	//FIXME: theres gotta be a better way to do this
 	g.layers[1][g.prevPlayerPos] = 0
 	g.layers[1][g.player.PosIndex] = 1
-	fmt.Printf("\n%v\n", g.layers[1])
 
 	g.prevPlayerPos = g.player.PosIndex
 }
