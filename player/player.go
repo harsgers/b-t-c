@@ -69,24 +69,29 @@ func (p *Player) HandleMovement(keyPressed ebiten.Key, mapData []int) error {
 	return nil
 }
 
-func (p *Player) Update(mapData []int) error {
+func (p *Player) Update(mapData []int) (bool, error) {
+	didMove := false
 	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
 		p.HandleMovement(ebiten.KeyDown, mapData)
+		didMove = true
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
 		p.HandleMovement(ebiten.KeyUp, mapData)
+		didMove = true
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
 		p.HandleMovement(ebiten.KeyLeft, mapData)
+		didMove = true
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
 		p.HandleMovement(ebiten.KeyRight, mapData)
+		didMove = true
 	}
 
-	return nil
+	return didMove, nil
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {

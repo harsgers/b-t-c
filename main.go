@@ -38,8 +38,10 @@ type Coords struct {
 	Y float64
 }
 type Game struct {
-	layers [][]int
-	player *player.Player
+	layers        [][]int
+	player        *player.Player
+	prevPlayerPos int
+	//TODO: keep track of previous positions of all objects on screen (map state?)
 }
 
 func (g *Game) Update() error {
@@ -47,9 +49,15 @@ func (g *Game) Update() error {
 	//see if a turn has happened
 	//if so then update other entities on screen
 	//update map state
-	g.player.Update(g.layers[0])
+	didMove, _ := g.player.Update(g.layers[0])
+	if didMove {
+		g.updateMap()
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
-		fmt.Printf("Current Game State: %+v", g)
+		fmt.Printf("%v \n", g.layers[1])
+		fmt.Printf("player: %v \n", g.player.PosIndex)
+		fmt.Printf("prevplayer: %v \n", g.prevPlayerPos)
 	}
 	return nil
 }
@@ -79,6 +87,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return SCREEN_WIDTH, SCREEN_HEIGHT
 }
+
+func (g *Game) updateMap() {
+	//FIXME: theres gotta be a better way to do this
+	g.layers[1][g.prevPlayerPos] = 0
+	g.layers[1][g.player.PosIndex] = 1
+	fmt.Printf("\n%v\n", g.layers[1])
+
+	g.prevPlayerPos = g.player.PosIndex
+}
 func main() {
 
 	baseMap := InitMap('0', '3', 8, 4)
@@ -89,7 +106,8 @@ func main() {
 			baseMap,
 			objectMap,
 		},
-		player: player.NewPlayer(20, 20),
+		player:        player.NewPlayer(20, 20),
+		prevPlayerPos: 20,
 	}
 	ebiten.SetWindowSize(961, 961)
 	ebiten.SetWindowTitle("beneath the castle")

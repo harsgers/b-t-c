@@ -36,12 +36,13 @@ func InitOLayer(mapSize int, baseLayer []int) []int {
 	oLayer := make([]int, mapSize)
 	//TODO: make this dynamic, actually check for walls
 	for i := range oLayer {
-		if i == 45 {
+		if i == 20 {
 			oLayer[i] = 1
 			continue
 		}
 		oLayer[i] = 0
 	}
+	fmt.Printf("%+v", oLayer)
 	return oLayer
 }
 
