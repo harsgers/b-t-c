@@ -40,6 +40,10 @@ func InitOLayer(mapSize int, baseLayer []int) []int {
 			oLayer[i] = 1
 			continue
 		}
+		if i == 21 {
+			oLayer[i] = 3
+			continue
+		}
 		oLayer[i] = 0
 	}
 	fmt.Printf("%+v", oLayer)

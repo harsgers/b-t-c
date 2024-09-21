@@ -16,4 +16,7 @@ var (
 
 	//go:embed my_guy.png
 	MyGuy_png []byte
+
+	//go:embed Baddie.png
+	Baddie_png []byte
 )

@@ -2,6 +2,7 @@ package player
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"log"
 
@@ -41,25 +42,25 @@ func NewPlayer(startingPosition, startingHealth int) *Player {
 	}
 }
 
-func (p *Player) HandleMovement(keyPressed ebiten.Key, mapData []int) error {
+func (p *Player) HandleMovement(keyPressed ebiten.Key, mapData [][]int) error {
 	newPlayerPosition := p.PosIndex
 
 	switch keyPressed {
 	case ebiten.KeyDown:
-		if mapData[p.PosIndex+30] != 2 {
-			newPlayerPosition = p.PosIndex + 30
+		if mapData[0][p.Below()] == 0 {
+			newPlayerPosition = p.Below()
 		}
 	case ebiten.KeyUp:
-		if mapData[p.PosIndex-30] != 2 {
-			newPlayerPosition = p.PosIndex - 30
+		if mapData[0][p.Above()] == 0 {
+			newPlayerPosition = p.Above()
 		}
 	case ebiten.KeyLeft:
-		if mapData[p.PosIndex-1] != 2 {
-			newPlayerPosition = p.PosIndex - 1
+		if mapData[0][p.Left()] == 0 {
+			newPlayerPosition = p.Left()
 		}
 	case ebiten.KeyRight:
-		if mapData[p.PosIndex+1] != 2 {
-			newPlayerPosition = p.PosIndex + 1
+		if mapData[0][p.Right()] == 0 {
+			newPlayerPosition = p.Right()
 		}
 	default:
 		newPlayerPosition = p.PosIndex
@@ -69,29 +70,44 @@ func (p *Player) HandleMovement(keyPressed ebiten.Key, mapData []int) error {
 	return nil
 }
 
-func (p *Player) Update(mapData []int) (bool, error) {
+// TODO: it probably makes more sense to pass the player state down into the scene or map or whatever and have all actions handled there
+func (p *Player) Update(mapData [][]int) (bool, error) {
 	didMove := false
 	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		p.HandleMovement(ebiten.KeyDown, mapData)
-		didMove = true
+		switch mapData[1][p.Below()] {
+		case 3:
+			//handle combat
+			fmt.Printf("encountered enemy")
+
+		default:
+			p.HandleMovement(ebiten.KeyDown, mapData)
+			didMove = true
+		}
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		p.HandleMovement(ebiten.KeyUp, mapData)
-		didMove = true
-	}
+		switch mapData[1][p.Above()] {
+		case 3:
+			//handle combat
+			fmt.Printf("encountered enemy")
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-		p.HandleMovement(ebiten.KeyLeft, mapData)
-		didMove = true
-	}
+			p.HandleMovement(ebiten.KeyUp, mapData)
+			didMove = true
+		}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-		p.HandleMovement(ebiten.KeyRight, mapData)
-		didMove = true
-	}
+		if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
+			p.HandleMovement(ebiten.KeyLeft, mapData)
+			didMove = true
+		}
 
-	return didMove, nil
+		if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
+			p.HandleMovement(ebiten.KeyRight, mapData)
+			didMove = true
+		}
+
+		return didMove, nil
+	}
+	return true, nil
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
@@ -105,4 +121,17 @@ func (p *Player) Draw(screen *ebiten.Image) {
 
 func (p *Player) isPathBlocked(mapData []int) {
 
+}
+
+func (p *Player) Above() int {
+	return p.PosIndex - 30
+}
+func (p *Player) Below() int {
+	return p.PosIndex + 30
+}
+func (p *Player) Right() int {
+	return p.PosIndex + 1
+}
+func (p *Player) Left() int {
+	return p.PosIndex - 1
 }
